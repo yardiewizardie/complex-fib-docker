@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t yardiewizardie/complex-fib -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true yardiewizardie/complex-fib npm test
+
+after_success:
+  - docker build -t yardiewizardie/complex-fib-client ./client
+  - docker build -t yardiewizardie/complex-fib-nginx ./nginx
+  - docker build -t yardiewizardie/complex-fib-node ./server
+  - docker build -t yardiewizardie/complex-fib-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push yardiewizardie/complex-fib-client
+  - docker push yardiewizardie/complex-fib-nginx
+  - docker push yardiewizardie/complex-fib-node
+  - docker push yardiewizardie/complex-fib-worker
